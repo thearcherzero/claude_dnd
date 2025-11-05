@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessible Periodic Table of Elements</title>
+    <style>
+        :root {
+            --nonmetal: #a8e6cf;
+            --noble-gas: #ffd3b6;
+            --alkali: #ffaaa5;
+            --alkaline: #ff8b94;
+            --metalloid: #d4a5a5;
+            --halogen: #c7ceea;
+            --metal: #b8b8d1;
+            --transition: #aec6cf;
+            --lanthanide: #e0b3d6;
+            --actinide: #d5b8e8;
+            --unknown: #e0e0e0;
+            --focus-color: #0066cc;
+            --text-dark: #1a1a1a;
+            --bg-light: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--focus-color);
+            color: white;
+            padding: 8px;
+            text-decoration: none;
+            z-index: 100;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .description {
+            font-size: 1rem;
+            color: #555;
+            max-width: 800px;
+            margin: 0 auto 20px;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-light);
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border: 2px solid var(--text-dark);
+            border-radius: 4px;
+        }
+
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, 1fr);
+            gap: 2px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--bg-light);
+            border-radius: 8px;
+        }
+
+        .element {
+            aspect-ratio: 1;
+            padding: 8px;
+            border: 2px solid var(--text-dark);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-dark);
+            position: relative;
+        }
+
+        .element:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .element:focus {
+            outline: 3px solid var(--focus-color);
+            outline-offset: 2px;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .element .atomic-number {
+            font-size: 0.65rem;
+            font-weight: bold;
+            position: absolute;
+            top: 4px;
+            left: 6px;
+        }
+
+        .element .symbol {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 4px 0;
+        }
+
+        .element .name {
+            font-size: 0.6rem;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .element .mass {
+            font-size: 0.55rem;
+            position: absolute;
+            bottom: 4px;
+            right: 6px;
+        }
+
+        /* Category colors */
+        .nonmetal { background-color: var(--nonmetal); }
+        .noble-gas { background-color: var(--noble-gas); }
+        .alkali { background-color: var(--alkali); }
+        .alkaline { background-color: var(--alkaline); }
+        .metalloid { background-color: var(--metalloid); }
+        .halogen { background-color: var(--halogen); }
+        .metal { background-color: var(--metal); }
+        .transition { background-color: var(--transition); }
+        .lanthanide { background-color: var(--lanthanide); }
+        .actinide { background-color: var(--actinide); }
+        .unknown { background-color: var(--unknown); }
+
+        /* Grid positioning */
+        .empty { background: transparent; border: none; cursor: default; }
+        .empty:hover, .empty:focus { transform: none; box-shadow: none; outline: none; }
+
+        /* Lanthanides and Actinides separator */
+        .separator-row {
+            grid-column: 1 / -1;
+            height: 20px;
+        }
+
+        /* Modal for element details */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-light);
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: var(--text-dark);
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: var(--focus-color);
+            outline: 2px solid var(--focus-color);
+        }
+
+        @media (max-width: 1200px) {
+            .periodic-table {
+                font-size: 0.8rem;
+            }
+            .element .symbol {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .periodic-table {
+                grid-template-columns: repeat(9, 1fr);
+                font-size: 0.7rem;
+            }
+            .element .symbol {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .element {
+                border-width: 3px;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            .element {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="#periodic-table" class="skip-link">Skip to periodic table</a>
+
+    <header>
+        <h1>Accessible Periodic Table of Elements</h1>
+        <p class="description">
+            An interactive periodic table with full keyboard navigation and screen reader support.
+            Click or press Enter on any element to view detailed information.
+        </p>
+    </header>
+
+    <nav aria-label="Element category legend">
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color nonmetal" role="img" aria-label="Nonmetal color"></div>
+                <span>Nonmetal</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color noble-gas" role="img" aria-label="Noble gas color"></div>
+                <span>Noble Gas</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color alkali" role="img" aria-label="Alkali metal color"></div>
+                <span>Alkali Metal</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color alkaline" role="img" aria-label="Alkaline earth metal color"></div>
+                <span>Alkaline Earth</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color metalloid" role="img" aria-label="Metalloid color"></div>
+                <span>Metalloid</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color halogen" role="img" aria-label="Halogen color"></div>
+                <span>Halogen</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color metal" role="img" aria-label="Post-transition metal color"></div>
+                <span>Post-transition Metal</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color transition" role="img" aria-label="Transition metal color"></div>
+                <span>Transition Metal</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color lanthanide" role="img" aria-label="Lanthanide color"></div>
+                <span>Lanthanide</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color actinide" role="img" aria-label="Actinide color"></div>
+                <span>Actinide</span>
+            </div>
+        </div>
+    </nav>
+
+    <main id="periodic-table" aria-label="Periodic table of elements">
+        <div class="periodic-table" role="grid" aria-label="Chemical elements arranged in periodic table format">
+            <!-- Period 1 -->
+            <button class="element nonmetal" role="gridcell" tabindex="0" aria-label="Hydrogen, element 1, atomic mass 1.008, nonmetal" data-element="1">
+                <span class="atomic-number">1</span>
+                <span class="symbol">H</span>
+                <span class="name">Hydrogen</span>
+                <span class="mass">1.008</span>
+            </button>
+            <div class="empty" style="grid-column: span 16;"></div>
+            <button class="element noble-gas" role="gridcell" aria-label="Helium, element 2, atomic mass 4.003, noble gas" data-element="2">
+                <span class="atomic-number">2</span>
+                <span class="symbol">He</span>
+                <span class="name">Helium</span>
+                <span class="mass">4.003</span>
+            </button>
+
+            <!-- Period 2 -->
+            <button class="element alkali" role="gridcell" aria-label="Lithium, element 3, atomic mass 6.941, alkali metal" data-element="3">
+                <span class="atomic-number">3</span>
+                <span class="symbol">Li</span>
+                <span class="name">Lithium</span>
+                <span class="mass">6.941</span>
+            </button>
+            <button class="element alkaline" role="gridcell" aria-label="Beryllium, element 4, atomic mass 9.012, alkaline earth metal" data-element="4">
+                <span class="atomic-number">4</span>
+                <span class="symbol">Be</span>
+                <span class="name">Beryllium</span>
+                <span class="mass">9.012</span>
+            </button>
+            <div class="empty" style="grid-column: span 10;"></div>
+            <button class="element metalloid" role="gridcell" aria-label="Boron, element 5, atomic mass 10.811, metalloid" data-element="5">
+                <span class="atomic-number">5</span>
+                <span class="symbol">B</span>
+                <span class="name">Boron</span>
+                <span class="mass">10.811</span>
+            </button>
+            <button class="element nonmetal" role="gridcell" aria-label="Carbon, element 6, atomic mass 12.011, nonmetal" data-element="6">
+                <span class="atomic-number">6</span>
+                <span class="symbol">C</span>
+                <span class="name">Carbon</span>
+                <span class="mass">12.011</span>
+            </button>
+            <button class="element nonmetal" role="gridcell" aria-label="Nitrogen, element 7, atomic mass 14.007, nonmetal" data-element="7">
+                <span class="atomic-number">7</span>
+                <span class="symbol">N</span>
+                <span class="name">Nitrogen</span>
+                <span class="mass">14.007</span>
+            </button>
+            <button class="element nonmetal" role="gridcell" aria-label="Oxygen, element 8, atomic mass 15.999, nonmetal" data-element="8">
+                <span class="atomic-number">8</span>
+                <span class="symbol">O</span>
+                <span class="name">Oxygen</span>
+                <span class="mass">15.999</span>
+            </button>
+            <button class="element halogen" role="gridcell" aria-label="Fluorine, element 9, atomic mass 18.998, halogen" data-element="9">
+                <span class="atomic-number">9</span>
+                <span class="symbol">F</span>
+                <span class="name">Fluorine</span>
+                <span class="mass">18.998</span>
+            </button>
+            <button class="element noble-gas" role="gridcell" aria-label="Neon, element 10, atomic mass 20.180, noble gas" data-element="10">
+                <span class="atomic-number">10</span>
+                <span class="symbol">Ne</span>
+                <span class="name">Neon</span>
+                <span class="mass">20.180</span>
+            </button>
+
+            <!-- Period 3 -->
+            <button class="element alkali" role="gridcell" aria-label="Sodium, element 11, atomic mass 22.990, alkali metal" data-element="11">
+                <span class="atomic-number">11</span>
+                <span class="symbol">Na</span>
+                <span class="name">Sodium</span>
+                <span class="mass">22.990</span>
+            </button>
+            <button class="element alkaline" role="gridcell" aria-label="Magnesium, element 12, atomic mass 24.305, alkaline earth metal" data-element="12">
+                <span class="atomic-number">12</span>
+                <span class="symbol">Mg</span>
+                <span class="name">Magnesium</span>
+                <span class="mass">24.305</span>
+            </button>
+            <div class="empty" style="grid-column: span 10;"></div>
+            <button class="element metal" role="gridcell" aria-label="Aluminum, element 13, atomic mass 26.982, post-transition metal" data-element="13">
+                <span class="atomic-number">13</span>
+                <span class="symbol">Al</span>
+                <span class="name">Aluminum</span>
+                <span class="mass">26.982</span>
+            </button>
+            <button class="element metalloid" role="gridcell" aria-label="Silicon, element 14, atomic mass 28.086, metalloid" data-element="14">
+                <span class="atomic-number">14</span>
+                <span class="symbol">Si</span>
+                <span class="name">Silicon</span>
+                <span class="mass">28.086</span>
+            </button>
+            <button class="element nonmetal" role="gridcell" aria-label="Phosphorus, element 15, atomic mass 30.974, nonmetal" data-element="15">
+                <span class="atomic-number">15</span>
+                <span class="symbol">P</span>
+                <span class="name">Phosphorus</span>
+                <span class="mass">30.974</span>
+            </button>
+            <button class="element nonmetal" role="gridcell" aria-label="Sulfur, element 16, atomic mass 32.065, nonmetal" data-element="16">
+                <span class="atomic-number">16</span>
+                <span class="symbol">S</span>
+                <span class="name">Sulfur</span>
+                <span class="mass">32.065</span>
+            </button>
+            <button class="element halogen" role="gridcell" aria-label="Chlorine, element 17, atomic mass 35.453, halogen" data-element="17">
+                <span class="atomic-number">17</span>
+                <span class="symbol">Cl</span>
+                <span class="name">Chlorine</span>
+                <span class="mass">35.453</span>
+            </button>
+            <button class="element noble-gas" role="gridcell" aria-label="Argon, element 18, atomic mass 39.948, noble gas" data-element="18">
+                <span class="atomic-number">18</span>
+                <span class="symbol">Ar</span>
+                <span class="name">Argon</span>
+                <span class="mass">39.948</span>
+            </button>
+
+            <!-- Period 4 -->
+            <button class="element alkali" role="gridcell" aria-label="Potassium, element 19, atomic mass 39.098, alkali metal" data-element="19">
+                <span class="atomic-number">19</span>
+                <span class="symbol">K</span>
+                <span class="name">Potassium</span>
+                <span class="mass">39.098</span>
+            </button>
+            <button class="element alkaline" role="gridcell" aria-label="Calcium, element 20, atomic mass 40.078, alkaline earth metal" data-element="20">
+                <span class="atomic-number">20</span>
+                <span class="symbol">Ca</span>
+                <span class="name">Calcium</span>
+                <span class="mass">40.078</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Scandium, element 21, atomic mass 44.956, transition metal" data-element="21">
+                <span class="atomic-number">21</span>
+                <span class="symbol">Sc</span>
+                <span class="name">Scandium</span>
+                <span class="mass">44.956</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Titanium, element 22, atomic mass 47.867, transition metal" data-element="22">
+                <span class="atomic-number">22</span>
+                <span class="symbol">Ti</span>
+                <span class="name">Titanium</span>
+                <span class="mass">47.867</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Vanadium, element 23, atomic mass 50.942, transition metal" data-element="23">
+                <span class="atomic-number">23</span>
+                <span class="symbol">V</span>
+                <span class="name">Vanadium</span>
+                <span class="mass">50.942</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Chromium, element 24, atomic mass 51.996, transition metal" data-element="24">
+                <span class="atomic-number">24</span>
+                <span class="symbol">Cr</span>
+                <span class="name">Chromium</span>
+                <span class="mass">51.996</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Manganese, element 25, atomic mass 54.938, transition metal" data-element="25">
+                <span class="atomic-number">25</span>
+                <span class="symbol">Mn</span>
+                <span class="name">Manganese</span>
+                <span class="mass">54.938</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Iron, element 26, atomic mass 55.845, transition metal" data-element="26">
+                <span class="atomic-number">26</span>
+                <span class="symbol">Fe</span>
+                <span class="name">Iron</span>
+                <span class="mass">55.845</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Cobalt, element 27, atomic mass 58.933, transition metal" data-element="27">
+                <span class="atomic-number">27</span>
+                <span class="symbol">Co</span>
+                <span class="name">Cobalt</span>
+                <span class="mass">58.933</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Nickel, element 28, atomic mass 58.693, transition metal" data-element="28">
+                <span class="atomic-number">28</span>
+                <span class="symbol">Ni</span>
+                <span class="name">Nickel</span>
+                <span class="mass">58.693</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Copper, element 29, atomic mass 63.546, transition metal" data-element="29">
+                <span class="atomic-number">29</span>
+                <span class="symbol">Cu</span>
+                <span class="name">Copper</span>
+                <span class="mass">63.546</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Zinc, element 30, atomic mass 65.380, transition metal" data-element="30">
+                <span class="atomic-number">30</span>
+                <span class="symbol">Zn</span>
+                <span class="name">Zinc</span>
+                <span class="mass">65.380</span>
+            </button>
+            <button class="element metal" role="gridcell" aria-label="Gallium, element 31, atomic mass 69.723, post-transition metal" data-element="31">
+                <span class="atomic-number">31</span>
+                <span class="symbol">Ga</span>
+                <span class="name">Gallium</span>
+                <span class="mass">69.723</span>
+            </button>
+            <button class="element metalloid" role="gridcell" aria-label="Germanium, element 32, atomic mass 72.640, metalloid" data-element="32">
+                <span class="atomic-number">32</span>
+                <span class="symbol">Ge</span>
+                <span class="name">Germanium</span>
+                <span class="mass">72.640</span>
+            </button>
+            <button class="element metalloid" role="gridcell" aria-label="Arsenic, element 33, atomic mass 74.922, metalloid" data-element="33">
+                <span class="atomic-number">33</span>
+                <span class="symbol">As</span>
+                <span class="name">Arsenic</span>
+                <span class="mass">74.922</span>
+            </button>
+            <button class="element nonmetal" role="gridcell" aria-label="Selenium, element 34, atomic mass 78.960, nonmetal" data-element="34">
+                <span class="atomic-number">34</span>
+                <span class="symbol">Se</span>
+                <span class="name">Selenium</span>
+                <span class="mass">78.960</span>
+            </button>
+            <button class="element halogen" role="gridcell" aria-label="Bromine, element 35, atomic mass 79.904, halogen" data-element="35">
+                <span class="atomic-number">35</span>
+                <span class="symbol">Br</span>
+                <span class="name">Bromine</span>
+                <span class="mass">79.904</span>
+            </button>
+            <button class="element noble-gas" role="gridcell" aria-label="Krypton, element 36, atomic mass 83.798, noble gas" data-element="36">
+                <span class="atomic-number">36</span>
+                <span class="symbol">Kr</span>
+                <span class="name">Krypton</span>
+                <span class="mass">83.798</span>
+            </button>
+
+            <!-- Period 5 -->
+            <button class="element alkali" role="gridcell" aria-label="Rubidium, element 37, atomic mass 85.468, alkali metal" data-element="37">
+                <span class="atomic-number">37</span>
+                <span class="symbol">Rb</span>
+                <span class="name">Rubidium</span>
+                <span class="mass">85.468</span>
+            </button>
+            <button class="element alkaline" role="gridcell" aria-label="Strontium, element 38, atomic mass 87.620, alkaline earth metal" data-element="38">
+                <span class="atomic-number">38</span>
+                <span class="symbol">Sr</span>
+                <span class="name">Strontium</span>
+                <span class="mass">87.620</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Yttrium, element 39, atomic mass 88.906, transition metal" data-element="39">
+                <span class="atomic-number">39</span>
+                <span class="symbol">Y</span>
+                <span class="name">Yttrium</span>
+                <span class="mass">88.906</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Zirconium, element 40, atomic mass 91.224, transition metal" data-element="40">
+                <span class="atomic-number">40</span>
+                <span class="symbol">Zr</span>
+                <span class="name">Zirconium</span>
+                <span class="mass">91.224</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Niobium, element 41, atomic mass 92.906, transition metal" data-element="41">
+                <span class="atomic-number">41</span>
+                <span class="symbol">Nb</span>
+                <span class="name">Niobium</span>
+                <span class="mass">92.906</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Molybdenum, element 42, atomic mass 95.960, transition metal" data-element="42">
+                <span class="atomic-number">42</span>
+                <span class="symbol">Mo</span>
+                <span class="name">Molybdenum</span>
+                <span class="mass">95.960</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Technetium, element 43, atomic mass 98, transition metal" data-element="43">
+                <span class="atomic-number">43</span>
+                <span class="symbol">Tc</span>
+                <span class="name">Technetium</span>
+                <span class="mass">98</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Ruthenium, element 44, atomic mass 101.07, transition metal" data-element="44">
+                <span class="atomic-number">44</span>
+                <span class="symbol">Ru</span>
+                <span class="name">Ruthenium</span>
+                <span class="mass">101.07</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Rhodium, element 45, atomic mass 102.91, transition metal" data-element="45">
+                <span class="atomic-number">45</span>
+                <span class="symbol">Rh</span>
+                <span class="name">Rhodium</span>
+                <span class="mass">102.91</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Palladium, element 46, atomic mass 106.42, transition metal" data-element="46">
+                <span class="atomic-number">46</span>
+                <span class="symbol">Pd</span>
+                <span class="name">Palladium</span>
+                <span class="mass">106.42</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Silver, element 47, atomic mass 107.87, transition metal" data-element="47">
+                <span class="atomic-number">47</span>
+                <span class="symbol">Ag</span>
+                <span class="name">Silver</span>
+                <span class="mass">107.87</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Cadmium, element 48, atomic mass 112.41, transition metal" data-element="48">
+                <span class="atomic-number">48</span>
+                <span class="symbol">Cd</span>
+                <span class="name">Cadmium</span>
+                <span class="mass">112.41</span>
+            </button>
+            <button class="element metal" role="gridcell" aria-label="Indium, element 49, atomic mass 114.82, post-transition metal" data-element="49">
+                <span class="atomic-number">49</span>
+                <span class="symbol">In</span>
+                <span class="name">Indium</span>
+                <span class="mass">114.82</span>
+            </button>
+            <button class="element metal" role="gridcell" aria-label="Tin, element 50, atomic mass 118.71, post-transition metal" data-element="50">
+                <span class="atomic-number">50</span>
+                <span class="symbol">Sn</span>
+                <span class="name">Tin</span>
+                <span class="mass">118.71</span>
+            </button>
+            <button class="element metalloid" role="gridcell" aria-label="Antimony, element 51, atomic mass 121.76, metalloid" data-element="51">
+                <span class="atomic-number">51</span>
+                <span class="symbol">Sb</span>
+                <span class="name">Antimony</span>
+                <span class="mass">121.76</span>
+            </button>
+            <button class="element metalloid" role="gridcell" aria-label="Tellurium, element 52, atomic mass 127.60, metalloid" data-element="52">
+                <span class="atomic-number">52</span>
+                <span class="symbol">Te</span>
+                <span class="name">Tellurium</span>
+                <span class="mass">127.60</span>
+            </button>
+            <button class="element halogen" role="gridcell" aria-label="Iodine, element 53, atomic mass 126.90, halogen" data-element="53">
+                <span class="atomic-number">53</span>
+                <span class="symbol">I</span>
+                <span class="name">Iodine</span>
+                <span class="mass">126.90</span>
+            </button>
+            <button class="element noble-gas" role="gridcell" aria-label="Xenon, element 54, atomic mass 131.29, noble gas" data-element="54">
+                <span class="atomic-number">54</span>
+                <span class="symbol">Xe</span>
+                <span class="name">Xenon</span>
+                <span class="mass">131.29</span>
+            </button>
+
+            <!-- Period 6 -->
+            <button class="element alkali" role="gridcell" aria-label="Cesium, element 55, atomic mass 132.91, alkali metal" data-element="55">
+                <span class="atomic-number">55</span>
+                <span class="symbol">Cs</span>
+                <span class="name">Cesium</span>
+                <span class="mass">132.91</span>
+            </button>
+            <button class="element alkaline" role="gridcell" aria-label="Barium, element 56, atomic mass 137.33, alkaline earth metal" data-element="56">
+                <span class="atomic-number">56</span>
+                <span class="symbol">Ba</span>
+                <span class="name">Barium</span>
+                <span class="mass">137.33</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Lanthanum, element 57, atomic mass 138.91, lanthanide. Note: Elements 57-71 lanthanides shown below" data-element="57">
+                <span class="atomic-number">57-71</span>
+                <span class="symbol">La-Lu</span>
+                <span class="name">Lanthanides</span>
+                <span class="mass">*</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Hafnium, element 72, atomic mass 178.49, transition metal" data-element="72">
+                <span class="atomic-number">72</span>
+                <span class="symbol">Hf</span>
+                <span class="name">Hafnium</span>
+                <span class="mass">178.49</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Tantalum, element 73, atomic mass 180.95, transition metal" data-element="73">
+                <span class="atomic-number">73</span>
+                <span class="symbol">Ta</span>
+                <span class="name">Tantalum</span>
+                <span class="mass">180.95</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Tungsten, element 74, atomic mass 183.84, transition metal" data-element="74">
+                <span class="atomic-number">74</span>
+                <span class="symbol">W</span>
+                <span class="name">Tungsten</span>
+                <span class="mass">183.84</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Rhenium, element 75, atomic mass 186.21, transition metal" data-element="75">
+                <span class="atomic-number">75</span>
+                <span class="symbol">Re</span>
+                <span class="name">Rhenium</span>
+                <span class="mass">186.21</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Osmium, element 76, atomic mass 190.23, transition metal" data-element="76">
+                <span class="atomic-number">76</span>
+                <span class="symbol">Os</span>
+                <span class="name">Osmium</span>
+                <span class="mass">190.23</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Iridium, element 77, atomic mass 192.22, transition metal" data-element="77">
+                <span class="atomic-number">77</span>
+                <span class="symbol">Ir</span>
+                <span class="name">Iridium</span>
+                <span class="mass">192.22</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Platinum, element 78, atomic mass 195.08, transition metal" data-element="78">
+                <span class="atomic-number">78</span>
+                <span class="symbol">Pt</span>
+                <span class="name">Platinum</span>
+                <span class="mass">195.08</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Gold, element 79, atomic mass 196.97, transition metal" data-element="79">
+                <span class="atomic-number">79</span>
+                <span class="symbol">Au</span>
+                <span class="name">Gold</span>
+                <span class="mass">196.97</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Mercury, element 80, atomic mass 200.59, transition metal" data-element="80">
+                <span class="atomic-number">80</span>
+                <span class="symbol">Hg</span>
+                <span class="name">Mercury</span>
+                <span class="mass">200.59</span>
+            </button>
+            <button class="element metal" role="gridcell" aria-label="Thallium, element 81, atomic mass 204.38, post-transition metal" data-element="81">
+                <span class="atomic-number">81</span>
+                <span class="symbol">Tl</span>
+                <span class="name">Thallium</span>
+                <span class="mass">204.38</span>
+            </button>
+            <button class="element metal" role="gridcell" aria-label="Lead, element 82, atomic mass 207.2, post-transition metal" data-element="82">
+                <span class="atomic-number">82</span>
+                <span class="symbol">Pb</span>
+                <span class="name">Lead</span>
+                <span class="mass">207.2</span>
+            </button>
+            <button class="element metal" role="gridcell" aria-label="Bismuth, element 83, atomic mass 208.98, post-transition metal" data-element="83">
+                <span class="atomic-number">83</span>
+                <span class="symbol">Bi</span>
+                <span class="name">Bismuth</span>
+                <span class="mass">208.98</span>
+            </button>
+            <button class="element metal" role="gridcell" aria-label="Polonium, element 84, atomic mass 209, post-transition metal" data-element="84">
+                <span class="atomic-number">84</span>
+                <span class="symbol">Po</span>
+                <span class="name">Polonium</span>
+                <span class="mass">209</span>
+            </button>
+            <button class="element halogen" role="gridcell" aria-label="Astatine, element 85, atomic mass 210, halogen" data-element="85">
+                <span class="atomic-number">85</span>
+                <span class="symbol">At</span>
+                <span class="name">Astatine</span>
+                <span class="mass">210</span>
+            </button>
+            <button class="element noble-gas" role="gridcell" aria-label="Radon, element 86, atomic mass 222, noble gas" data-element="86">
+                <span class="atomic-number">86</span>
+                <span class="symbol">Rn</span>
+                <span class="name">Radon</span>
+                <span class="mass">222</span>
+            </button>
+
+            <!-- Period 7 -->
+            <button class="element alkali" role="gridcell" aria-label="Francium, element 87, atomic mass 223, alkali metal" data-element="87">
+                <span class="atomic-number">87</span>
+                <span class="symbol">Fr</span>
+                <span class="name">Francium</span>
+                <span class="mass">223</span>
+            </button>
+            <button class="element alkaline" role="gridcell" aria-label="Radium, element 88, atomic mass 226, alkaline earth metal" data-element="88">
+                <span class="atomic-number">88</span>
+                <span class="symbol">Ra</span>
+                <span class="name">Radium</span>
+                <span class="mass">226</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Actinium, element 89, atomic mass 227, actinide. Note: Elements 89-103 actinides shown below" data-element="89">
+                <span class="atomic-number">89-103</span>
+                <span class="symbol">Ac-Lr</span>
+                <span class="name">Actinides</span>
+                <span class="mass">**</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Rutherfordium, element 104, atomic mass 267, transition metal" data-element="104">
+                <span class="atomic-number">104</span>
+                <span class="symbol">Rf</span>
+                <span class="name">Rutherfordium</span>
+                <span class="mass">267</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Dubnium, element 105, atomic mass 268, transition metal" data-element="105">
+                <span class="atomic-number">105</span>
+                <span class="symbol">Db</span>
+                <span class="name">Dubnium</span>
+                <span class="mass">268</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Seaborgium, element 106, atomic mass 271, transition metal" data-element="106">
+                <span class="atomic-number">106</span>
+                <span class="symbol">Sg</span>
+                <span class="name">Seaborgium</span>
+                <span class="mass">271</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Bohrium, element 107, atomic mass 272, transition metal" data-element="107">
+                <span class="atomic-number">107</span>
+                <span class="symbol">Bh</span>
+                <span class="name">Bohrium</span>
+                <span class="mass">272</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Hassium, element 108, atomic mass 270, transition metal" data-element="108">
+                <span class="atomic-number">108</span>
+                <span class="symbol">Hs</span>
+                <span class="name">Hassium</span>
+                <span class="mass">270</span>
+            </button>
+            <button class="element unknown" role="gridcell" aria-label="Meitnerium, element 109, atomic mass 276, unknown properties" data-element="109">
+                <span class="atomic-number">109</span>
+                <span class="symbol">Mt</span>
+                <span class="name">Meitnerium</span>
+                <span class="mass">276</span>
+            </button>
+            <button class="element unknown" role="gridcell" aria-label="Darmstadtium, element 110, atomic mass 281, unknown properties" data-element="110">
+                <span class="atomic-number">110</span>
+                <span class="symbol">Ds</span>
+                <span class="name">Darmstadtium</span>
+                <span class="mass">281</span>
+            </button>
+            <button class="element unknown" role="gridcell" aria-label="Roentgenium, element 111, atomic mass 280, unknown properties" data-element="111">
+                <span class="atomic-number">111</span>
+                <span class="symbol">Rg</span>
+                <span class="name">Roentgenium</span>
+                <span class="mass">280</span>
+            </button>
+            <button class="element transition" role="gridcell" aria-label="Copernicium, element 112, atomic mass 285, transition metal" data-element="112">
+                <span class="atomic-number">112</span>
+                <span class="symbol">Cn</span>
+                <span class="name">Copernicium</span>
+                <span class="mass">285</span>
+            </button>
+            <button class="element unknown" role="gridcell" aria-label="Nihonium, element 113, atomic mass 284, unknown properties" data-element="113">
+                <span class="atomic-number">113</span>
+                <span class="symbol">Nh</span>
+                <span class="name">Nihonium</span>
+                <span class="mass">284</span>
+            </button>
+            <button class="element metal" role="gridcell" aria-label="Flerovium, element 114, atomic mass 289, post-transition metal" data-element="114">
+                <span class="atomic-number">114</span>
+                <span class="symbol">Fl</span>
+                <span class="name">Flerovium</span>
+                <span class="mass">289</span>
+            </button>
+            <button class="element unknown" role="gridcell" aria-label="Moscovium, element 115, atomic mass 288, unknown properties" data-element="115">
+                <span class="atomic-number">115</span>
+                <span class="symbol">Mc</span>
+                <span class="name">Moscovium</span>
+                <span class="mass">288</span>
+            </button>
+            <button class="element metal" role="gridcell" aria-label="Livermorium, element 116, atomic mass 293, post-transition metal" data-element="116">
+                <span class="atomic-number">116</span>
+                <span class="symbol">Lv</span>
+                <span class="name">Livermorium</span>
+                <span class="mass">293</span>
+            </button>
+            <button class="element halogen" role="gridcell" aria-label="Tennessine, element 117, atomic mass 294, halogen" data-element="117">
+                <span class="atomic-number">117</span>
+                <span class="symbol">Ts</span>
+                <span class="name">Tennessine</span>
+                <span class="mass">294</span>
+            </button>
+            <button class="element noble-gas" role="gridcell" aria-label="Oganesson, element 118, atomic mass 294, noble gas" data-element="118">
+                <span class="atomic-number">118</span>
+                <span class="symbol">Og</span>
+                <span class="name">Oganesson</span>
+                <span class="mass">294</span>
+            </button>
+
+            <div class="separator-row"></div>
+
+            <!-- Lanthanides -->
+            <div class="empty" style="grid-column: span 3;"></div>
+            <button class="element lanthanide" role="gridcell" aria-label="Lanthanum, element 57, atomic mass 138.91, lanthanide" data-element="57">
+                <span class="atomic-number">57</span>
+                <span class="symbol">La</span>
+                <span class="name">Lanthanum</span>
+                <span class="mass">138.91</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Cerium, element 58, atomic mass 140.12, lanthanide" data-element="58">
+                <span class="atomic-number">58</span>
+                <span class="symbol">Ce</span>
+                <span class="name">Cerium</span>
+                <span class="mass">140.12</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Praseodymium, element 59, atomic mass 140.91, lanthanide" data-element="59">
+                <span class="atomic-number">59</span>
+                <span class="symbol">Pr</span>
+                <span class="name">Praseodymium</span>
+                <span class="mass">140.91</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Neodymium, element 60, atomic mass 144.24, lanthanide" data-element="60">
+                <span class="atomic-number">60</span>
+                <span class="symbol">Nd</span>
+                <span class="name">Neodymium</span>
+                <span class="mass">144.24</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Promethium, element 61, atomic mass 145, lanthanide" data-element="61">
+                <span class="atomic-number">61</span>
+                <span class="symbol">Pm</span>
+                <span class="name">Promethium</span>
+                <span class="mass">145</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Samarium, element 62, atomic mass 150.36, lanthanide" data-element="62">
+                <span class="atomic-number">62</span>
+                <span class="symbol">Sm</span>
+                <span class="name">Samarium</span>
+                <span class="mass">150.36</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Europium, element 63, atomic mass 151.96, lanthanide" data-element="63">
+                <span class="atomic-number">63</span>
+                <span class="symbol">Eu</span>
+                <span class="name">Europium</span>
+                <span class="mass">151.96</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Gadolinium, element 64, atomic mass 157.25, lanthanide" data-element="64">
+                <span class="atomic-number">64</span>
+                <span class="symbol">Gd</span>
+                <span class="name">Gadolinium</span>
+                <span class="mass">157.25</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Terbium, element 65, atomic mass 158.93, lanthanide" data-element="65">
+                <span class="atomic-number">65</span>
+                <span class="symbol">Tb</span>
+                <span class="name">Terbium</span>
+                <span class="mass">158.93</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Dysprosium, element 66, atomic mass 162.50, lanthanide" data-element="66">
+                <span class="atomic-number">66</span>
+                <span class="symbol">Dy</span>
+                <span class="name">Dysprosium</span>
+                <span class="mass">162.50</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Holmium, element 67, atomic mass 164.93, lanthanide" data-element="67">
+                <span class="atomic-number">67</span>
+                <span class="symbol">Ho</span>
+                <span class="name">Holmium</span>
+                <span class="mass">164.93</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Erbium, element 68, atomic mass 167.26, lanthanide" data-element="68">
+                <span class="atomic-number">68</span>
+                <span class="symbol">Er</span>
+                <span class="name">Erbium</span>
+                <span class="mass">167.26</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Thulium, element 69, atomic mass 168.93, lanthanide" data-element="69">
+                <span class="atomic-number">69</span>
+                <span class="symbol">Tm</span>
+                <span class="name">Thulium</span>
+                <span class="mass">168.93</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Ytterbium, element 70, atomic mass 173.05, lanthanide" data-element="70">
+                <span class="atomic-number">70</span>
+                <span class="symbol">Yb</span>
+                <span class="name">Ytterbium</span>
+                <span class="mass">173.05</span>
+            </button>
+            <button class="element lanthanide" role="gridcell" aria-label="Lutetium, element 71, atomic mass 174.97, lanthanide" data-element="71">
+                <span class="atomic-number">71</span>
+                <span class="symbol">Lu</span>
+                <span class="name">Lutetium</span>
+                <span class="mass">174.97</span>
+            </button>
+
+            <!-- Actinides -->
+            <div class="empty" style="grid-column: span 3;"></div>
+            <button class="element actinide" role="gridcell" aria-label="Actinium, element 89, atomic mass 227, actinide" data-element="89">
+                <span class="atomic-number">89</span>
+                <span class="symbol">Ac</span>
+                <span class="name">Actinium</span>
+                <span class="mass">227</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Thorium, element 90, atomic mass 232.04, actinide" data-element="90">
+                <span class="atomic-number">90</span>
+                <span class="symbol">Th</span>
+                <span class="name">Thorium</span>
+                <span class="mass">232.04</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Protactinium, element 91, atomic mass 231.04, actinide" data-element="91">
+                <span class="atomic-number">91</span>
+                <span class="symbol">Pa</span>
+                <span class="name">Protactinium</span>
+                <span class="mass">231.04</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Uranium, element 92, atomic mass 238.03, actinide" data-element="92">
+                <span class="atomic-number">92</span>
+                <span class="symbol">U</span>
+                <span class="name">Uranium</span>
+                <span class="mass">238.03</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Neptunium, element 93, atomic mass 237, actinide" data-element="93">
+                <span class="atomic-number">93</span>
+                <span class="symbol">Np</span>
+                <span class="name">Neptunium</span>
+                <span class="mass">237</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Plutonium, element 94, atomic mass 244, actinide" data-element="94">
+                <span class="atomic-number">94</span>
+                <span class="symbol">Pu</span>
+                <span class="name">Plutonium</span>
+                <span class="mass">244</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Americium, element 95, atomic mass 243, actinide" data-element="95">
+                <span class="atomic-number">95</span>
+                <span class="symbol">Am</span>
+                <span class="name">Americium</span>
+                <span class="mass">243</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Curium, element 96, atomic mass 247, actinide" data-element="96">
+                <span class="atomic-number">96</span>
+                <span class="symbol">Cm</span>
+                <span class="name">Curium</span>
+                <span class="mass">247</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Berkelium, element 97, atomic mass 247, actinide" data-element="97">
+                <span class="atomic-number">97</span>
+                <span class="symbol">Bk</span>
+                <span class="name">Berkelium</span>
+                <span class="mass">247</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Californium, element 98, atomic mass 251, actinide" data-element="98">
+                <span class="atomic-number">98</span>
+                <span class="symbol">Cf</span>
+                <span class="name">Californium</span>
+                <span class="mass">251</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Einsteinium, element 99, atomic mass 252, actinide" data-element="99">
+                <span class="atomic-number">99</span>
+                <span class="symbol">Es</span>
+                <span class="name">Einsteinium</span>
+                <span class="mass">252</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Fermium, element 100, atomic mass 257, actinide" data-element="100">
+                <span class="atomic-number">100</span>
+                <span class="symbol">Fm</span>
+                <span class="name">Fermium</span>
+                <span class="mass">257</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Mendelevium, element 101, atomic mass 258, actinide" data-element="101">
+                <span class="atomic-number">101</span>
+                <span class="symbol">Md</span>
+                <span class="name">Mendelevium</span>
+                <span class="mass">258</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Nobelium, element 102, atomic mass 259, actinide" data-element="102">
+                <span class="atomic-number">102</span>
+                <span class="symbol">No</span>
+                <span class="name">Nobelium</span>
+                <span class="mass">259</span>
+            </button>
+            <button class="element actinide" role="gridcell" aria-label="Lawrencium, element 103, atomic mass 262, actinide" data-element="103">
+                <span class="atomic-number">103</span>
+                <span class="symbol">Lr</span>
+                <span class="name">Lawrencium</span>
+                <span class="mass">262</span>
+            </button>
+        </div>
+    </main>
+
+    <div id="element-modal" class="modal" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Close dialog">&times;</button>
+            <div id="modal-body">
+                <!-- Element details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Keyboard navigation and modal functionality
+        const elements = document.querySelectorAll('.element:not(.empty)');
+        const modal = document.getElementById('element-modal');
+        const modalBody = document.getElementById('modal-body');
+        const modalClose = document.querySelector('.modal-close');
+
+        // Element data for detailed view
+        const elementData = {
+            1: { name: "Hydrogen", symbol: "H", number: 1, mass: "1.008", category: "Nonmetal", description: "The lightest and most abundant element in the universe." },
+            2: { name: "Helium", symbol: "He", number: 2, mass: "4.003", category: "Noble Gas", description: "A colorless, odorless, tasteless, non-toxic, inert gas." },
+            // Add more element data as needed
+        };
+
+        // Show element details in modal
+        function showElementDetails(elementId) {
+            const data = elementData[elementId];
+            if (data) {
+                modalBody.innerHTML = `
+                    <h2 id="modal-title">${data.name} (${data.symbol})</h2>
+                    <p><strong>Atomic Number:</strong> ${data.number}</p>
+                    <p><strong>Atomic Mass:</strong> ${data.mass}</p>
+                    <p><strong>Category:</strong> ${data.category}</p>
+                    <p>${data.description}</p>
+                `;
+            } else {
+                const button = document.querySelector(`[data-element="${elementId}"]`);
+                const ariaLabel = button.getAttribute('aria-label');
+                modalBody.innerHTML = `
+                    <h2 id="modal-title">Element ${elementId}</h2>
+                    <p>${ariaLabel}</p>
+                `;
+            }
+            modal.classList.add('active');
+            modalClose.focus();
+        }
+
+        // Close modal
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        // Event listeners for elements
+        elements.forEach(element => {
+            element.addEventListener('click', (e) => {
+                const elementId = e.currentTarget.getAttribute('data-element');
+                showElementDetails(elementId);
+            });
+
+            element.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    const elementId = e.currentTarget.getAttribute('data-element');
+                    showElementDetails(elementId);
+                }
+            });
+        });
+
+        // Modal close event listeners
+        modalClose.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        modalClose.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+
+        // Set initial tabindex
+        elements.forEach((element, index) => {
+            if (index > 0) {
+                element.setAttribute('tabindex', '-1');
+            }
+        });
+
+        // Grid-style keyboard navigation
+        let currentIndex = 0;
+
+        document.addEventListener('keydown', (e) => {
+            if (modal.classList.contains('active')) return;
+
+            const currentElement = document.activeElement;
+            if (!currentElement.classList.contains('element')) return;
+
+            let handled = false;
+            const elementsArray = Array.from(elements);
+            const currentIdx = elementsArray.indexOf(currentElement);
+
+            switch(e.key) {
+                case 'ArrowRight':
+                    if (currentIdx < elementsArray.length - 1) {
+                        elementsArray[currentIdx + 1].focus();
+                        handled = true;
+                    }
+                    break;
+                case 'ArrowLeft':
+                    if (currentIdx > 0) {
+                        elementsArray[currentIdx - 1].focus();
+                        handled = true;
+                    }
+                    break;
+                case 'ArrowDown':
+                case 'ArrowUp':
+                    // Basic up/down navigation
+                    const step = e.key === 'ArrowDown' ? 18 : -18;
+                    const newIdx = currentIdx + step;
+                    if (newIdx >= 0 && newIdx < elementsArray.length) {
+                        elementsArray[newIdx].focus();
+                        handled = true;
+                    }
+                    break;
+            }
+
+            if (handled) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
