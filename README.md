@@ -61,18 +61,30 @@ python -m http.server 8000
 
 ### Keyboard Controls
 
-- **Tab**: Navigate between elements
-- **Shift + Tab**: Navigate backwards
-- **Arrow Keys**: Navigate in grid pattern (up/down/left/right)
+- **Tab**: Navigate to the first element (Hydrogen) - then use arrow keys to navigate
+- **Shift + Tab**: Navigate backwards through page elements
+- **Arrow Keys** (←↑→↓): Navigate between elements in the grid
+  - **Right Arrow**: Move to next element
+  - **Left Arrow**: Move to previous element
+  - **Down Arrow**: Move down approximately one row
+  - **Up Arrow**: Move up approximately one row
 - **Enter or Space**: Open element details modal
 - **Escape**: Close modal dialog
 
+The periodic table uses a "roving tabindex" pattern for keyboard navigation - press Tab once to reach the first element, then use arrow keys to navigate through all elements efficiently.
+
 ### Interactive Features
 
-- Click or press Enter on any element to view detailed information
+- Click or press Enter on any element to view detailed information in a modal
+- All 118 elements display consistently formatted information:
+  - Element name and symbol as header
+  - Atomic number
+  - Atomic mass
+  - Element category
 - Color-coded categories help identify element types
-- Hover effects provide visual feedback
-- Modal dialogs display additional element information
+- Hover and focus effects provide visual feedback
+- Responsive design scales to fit most computer screens without scrolling
+- Modal dialogs are fully keyboard accessible
 
 ## WCAG 2.1 Compliance Checklist
 
