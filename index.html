@@ -30,10 +30,11 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            padding: 20px;
+            padding: 10px;
             background-color: #f5f5f5;
             color: var(--text-dark);
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
         .skip-link {
@@ -53,31 +54,68 @@
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
             color: var(--text-dark);
         }
 
         .description {
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: #555;
-            max-width: 800px;
+            max-width: 900px;
+            margin: 0 auto 15px;
+        }
+
+        .instructions {
+            background: #e8f4f8;
+            border-left: 4px solid var(--focus-color);
+            padding: 12px 16px;
             margin: 0 auto 20px;
+            max-width: 900px;
+            text-align: left;
+            border-radius: 4px;
+        }
+
+        .instructions h2 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .instructions ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .instructions li {
+            margin-bottom: 4px;
+        }
+
+        .instructions kbd {
+            background: var(--bg-light);
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-family: monospace;
+            font-size: 0.85em;
         }
 
         .legend {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            padding: 20px;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding: 12px;
             background: var(--bg-light);
             border-radius: 8px;
+            font-size: 0.85rem;
         }
 
         .legend-item {
@@ -87,8 +125,8 @@
         }
 
         .legend-color {
-            width: 30px;
-            height: 30px;
+            width: 24px;
+            height: 24px;
             border: 2px solid var(--text-dark);
             border-radius: 4px;
         }
@@ -97,16 +135,18 @@
             display: grid;
             grid-template-columns: repeat(18, 1fr);
             gap: 2px;
-            max-width: 1400px;
+            max-width: min(1400px, 98vw);
+            width: 100%;
             margin: 0 auto;
-            padding: 20px;
+            padding: 12px;
             background: var(--bg-light);
             border-radius: 8px;
         }
 
         .element {
             aspect-ratio: 1;
-            padding: 8px;
+            padding: 4px;
+            min-height: 0;
             border: 2px solid var(--text-dark);
             border-radius: 4px;
             cursor: pointer;
@@ -133,30 +173,30 @@
         }
 
         .element .atomic-number {
-            font-size: 0.65rem;
+            font-size: 0.55rem;
             font-weight: bold;
             position: absolute;
-            top: 4px;
-            left: 6px;
+            top: 2px;
+            left: 3px;
         }
 
         .element .symbol {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: bold;
-            margin: 4px 0;
+            margin: 2px 0;
         }
 
         .element .name {
-            font-size: 0.6rem;
+            font-size: 0.5rem;
             text-align: center;
-            line-height: 1.2;
+            line-height: 1.1;
         }
 
         .element .mass {
-            font-size: 0.55rem;
+            font-size: 0.48rem;
             position: absolute;
-            bottom: 4px;
-            right: 6px;
+            bottom: 2px;
+            right: 3px;
         }
 
         /* Category colors */
@@ -225,22 +265,42 @@
             outline: 2px solid var(--focus-color);
         }
 
-        @media (max-width: 1200px) {
-            .periodic-table {
+        @media (max-width: 1400px) {
+            .element .symbol {
+                font-size: 0.9rem;
+            }
+            .element .name {
+                font-size: 0.45rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .element .symbol {
                 font-size: 0.8rem;
             }
-            .element .symbol {
-                font-size: 1rem;
+            .element .name {
+                font-size: 0.4rem;
+            }
+            .element .atomic-number {
+                font-size: 0.5rem;
+            }
+            .element .mass {
+                font-size: 0.43rem;
             }
         }
 
         @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
             .periodic-table {
-                grid-template-columns: repeat(9, 1fr);
-                font-size: 0.7rem;
+                padding: 8px;
             }
             .element .symbol {
-                font-size: 0.9rem;
+                font-size: 0.7rem;
+            }
+            .element .name {
+                font-size: 0.35rem;
             }
         }
 
@@ -266,8 +326,17 @@
         <h1>Accessible Periodic Table of Elements</h1>
         <p class="description">
             An interactive periodic table with full keyboard navigation and screen reader support.
-            Click or press Enter on any element to view detailed information.
         </p>
+        <div class="instructions">
+            <h2>How to Use</h2>
+            <ul>
+                <li><kbd>Tab</kbd> - Navigate to the first element (Hydrogen), then use arrow keys</li>
+                <li><kbd>Arrow Keys</kbd> (←↑→↓) - Navigate between elements in the grid</li>
+                <li><kbd>Enter</kbd> or <kbd>Space</kbd> - View detailed information about an element</li>
+                <li><kbd>Escape</kbd> - Close the information modal</li>
+                <li><strong>Click</strong> any element to view its details</li>
+            </ul>
+        </div>
     </header>
 
     <nav aria-label="Element category legend">
@@ -1089,23 +1158,27 @@
 
         // Show element details in modal
         function showElementDetails(elementId) {
-            const data = elementData[elementId];
-            if (data) {
-                modalBody.innerHTML = `
-                    <h2 id="modal-title">${data.name} (${data.symbol})</h2>
-                    <p><strong>Atomic Number:</strong> ${data.number}</p>
-                    <p><strong>Atomic Mass:</strong> ${data.mass}</p>
-                    <p><strong>Category:</strong> ${data.category}</p>
-                    <p>${data.description}</p>
-                `;
-            } else {
-                const button = document.querySelector(`[data-element="${elementId}"]`);
-                const ariaLabel = button.getAttribute('aria-label');
-                modalBody.innerHTML = `
-                    <h2 id="modal-title">Element ${elementId}</h2>
-                    <p>${ariaLabel}</p>
-                `;
-            }
+            const button = document.querySelector(`[data-element="${elementId}"]`);
+            const ariaLabel = button.getAttribute('aria-label');
+
+            // Parse the aria-label format: "Name, element N, atomic mass X, category"
+            const parts = ariaLabel.split(', ');
+            const name = parts[0];
+            const number = parts[1] ? parts[1].replace('element ', '') : elementId;
+            const mass = parts[2] ? parts[2].replace('atomic mass ', '') : '';
+            const category = parts[3] ? parts[3].split('.')[0] : '';
+
+            // Get symbol from the button
+            const symbolEl = button.querySelector('.symbol');
+            const symbol = symbolEl ? symbolEl.textContent : '';
+
+            modalBody.innerHTML = `
+                <h2 id="modal-title">${name} (${symbol})</h2>
+                <p><strong>Atomic Number:</strong> ${number}</p>
+                <p><strong>Atomic Mass:</strong> ${mass}</p>
+                <p><strong>Category:</strong> ${category.charAt(0).toUpperCase() + category.slice(1)}</p>
+            `;
+
             modal.classList.add('active');
             modalClose.focus();
         }
@@ -1153,47 +1226,68 @@
             }
         });
 
-        // Set initial tabindex
-        elements.forEach((element, index) => {
-            if (index > 0) {
-                element.setAttribute('tabindex', '-1');
-            }
+        // Roving tabindex keyboard navigation
+        const elementsArray = Array.from(elements);
+        let currentFocusIndex = 0;
+
+        // Set initial tabindex - only first element is tabbable
+        elementsArray.forEach((element, index) => {
+            element.setAttribute('tabindex', index === 0 ? '0' : '-1');
         });
 
-        // Grid-style keyboard navigation
-        let currentIndex = 0;
+        // Update tabindex when focusing an element
+        function setFocusedElement(index) {
+            if (index < 0 || index >= elementsArray.length) return false;
 
+            // Remove tabindex from previous element
+            elementsArray[currentFocusIndex].setAttribute('tabindex', '-1');
+
+            // Set tabindex on new element and focus it
+            elementsArray[index].setAttribute('tabindex', '0');
+            elementsArray[index].focus();
+
+            currentFocusIndex = index;
+            return true;
+        }
+
+        // Grid-style keyboard navigation
         document.addEventListener('keydown', (e) => {
             if (modal.classList.contains('active')) return;
 
             const currentElement = document.activeElement;
             if (!currentElement.classList.contains('element')) return;
 
-            let handled = false;
-            const elementsArray = Array.from(elements);
             const currentIdx = elementsArray.indexOf(currentElement);
+            if (currentIdx === -1) return;
+
+            let handled = false;
+            let newIdx = currentIdx;
 
             switch(e.key) {
                 case 'ArrowRight':
-                    if (currentIdx < elementsArray.length - 1) {
-                        elementsArray[currentIdx + 1].focus();
-                        handled = true;
+                    newIdx = currentIdx + 1;
+                    if (newIdx < elementsArray.length) {
+                        handled = setFocusedElement(newIdx);
                     }
                     break;
                 case 'ArrowLeft':
-                    if (currentIdx > 0) {
-                        elementsArray[currentIdx - 1].focus();
-                        handled = true;
+                    newIdx = currentIdx - 1;
+                    if (newIdx >= 0) {
+                        handled = setFocusedElement(newIdx);
                     }
                     break;
                 case 'ArrowDown':
+                    // Move down by approximately 18 columns
+                    newIdx = currentIdx + 18;
+                    if (newIdx < elementsArray.length) {
+                        handled = setFocusedElement(newIdx);
+                    }
+                    break;
                 case 'ArrowUp':
-                    // Basic up/down navigation
-                    const step = e.key === 'ArrowDown' ? 18 : -18;
-                    const newIdx = currentIdx + step;
-                    if (newIdx >= 0 && newIdx < elementsArray.length) {
-                        elementsArray[newIdx].focus();
-                        handled = true;
+                    // Move up by approximately 18 columns
+                    newIdx = currentIdx - 18;
+                    if (newIdx >= 0) {
+                        handled = setFocusedElement(newIdx);
                     }
                     break;
             }
